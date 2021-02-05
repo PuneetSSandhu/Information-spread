@@ -80,8 +80,14 @@ def get_sick_prob(y, x):
     
     return prob_to_get_sick
 
+simulating = False
 running = True
 while running:
+    #quit when user hits x button
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    
     screen.fill(BLACK,(850, 60, 300, 200))
     #count the amount of sick, healthy, immune and dead
     (status, counts) = np.unique(population, return_counts = True)
@@ -167,7 +173,6 @@ while running:
         chart_infected_rect.move_ip(chart_area.left, chart_area.bottom+5)
         screen.blit(chart_infected, chart_infected_rect)
 
-    
     #draw a line of infected
     share_of_infected = (infected_people / 10000) * 100
     infected_dot = pygame.Rect(chart_area.left + days, chart_area.bottom - share_of_infected, 1,1)
@@ -178,39 +183,83 @@ while running:
     immune_dot = pygame.Rect(chart_area.left + days, chart_area.top + share_of_immune, 1,1)
     pygame.draw.rect(screen, BLACK, immune_dot)
 
+    #control buttons
+    #start
+    start_button = pygame.Rect(chart_area.left, chart_area.bottom+30, 150, 30)
+    start_button_text = small_font.render("START", False, BLACK)
+    start_button_text_rect = start_button_text.get_rect()
+    start_button_text_rect.center = start_button.center
+    pygame.draw.rect(screen, WHITE, start_button)
+    screen.blit(start_button_text, start_button_text_rect)
+
+    #stop
+    stop_button = pygame.Rect(start_button.right + 20, chart_area.bottom+30, 150, 30)
+    stop_button_text = small_font.render("STOP", False, BLACK)
+    stop_button_text_rect = stop_button_text.get_rect()
+    stop_button_text_rect.center = stop_button.center
+    pygame.draw.rect(screen, WHITE, stop_button)
+    screen.blit(stop_button_text, stop_button_text_rect)
+
+    #restart
+    restart_button = pygame.Rect(stop_button.right + 20, chart_area.bottom+30, 150, 30)
+    restart_button_text = small_font.render("RESTART", False, BLACK)
+    restart_button_text_rect = restart_button_text.get_rect()
+    restart_button_text_rect.center = restart_button.center
+    pygame.draw.rect(screen, WHITE, restart_button)
+    screen.blit(restart_button_text, restart_button_text_rect)
 
 
-    
-    #draw array of people
-    for y in range(len(population)):
-        for x in range(len(population)):
-            rect = pygame.Rect(y*tile_size+y*1, x*tile_size+x*1, tile_size, tile_size)
-            if population[y][x] == 0:
-                pygame.draw.rect(screen, WHITE, rect, 0)
-            elif population[y][x] == 1:
-                pygame.draw.rect(screen, GREEN, rect, 0)
-            elif population[y][x] == 2:
-                pygame.draw.rect(screen, RED, rect, 0)
-            else:
-                pygame.draw.rect(screen, BLUE, rect, 0)
+    #check whether buttons were clicked
+    click, _, _ = pygame.mouse.get_pressed()
+    if click == True:
+        mouse = pygame.mouse.get_pos()
+        if start_button.collidepoint(mouse):
+            simulating = True
+        elif stop_button.collidepoint(mouse):
+            simulating = False
+        elif restart_button.collidepoint(mouse):
+            population = np.zeros((100,100))
+            tmp_population = copy.deepcopy(population)
+            days = 0
+            i = random.randint(1,2) # number of infected
+            for k in range(i):
+                population[random.randint(0, len(population)-1)][random.randint(0,len(population)-1)] = 2
 
-    # calculate new state
-    tmp_population = copy.deepcopy(population)
 
-    for y in range(len(population)):
-        for x in range(len(population)):
-            # calculate new sicknesses for healthy people
-            if population[y][x] == 0:
-                is_sick = get_sick_prob(y,x)
-                # using this probability randomly choose whether person gets sick or not
-                tmp_population[y][x] = random.choices([0, 2], weights=(1-is_sick, is_sick), k=1)[0]
-            # calculate new recoveries or deaths
-            elif population[y][x] == 2:
-                tmp_population[y][x] = random.choices([1,3,2], weights=(prob_recover, prob_death, 1-prob_recover-prob_death), k=1)[0]
 
-    population = copy.deepcopy(tmp_population)
-    #add new day at the end of the cycle
-    days += 1
+
+    if simulating:
+        #draw array of people
+        for y in range(len(population)):
+            for x in range(len(population)):
+                rect = pygame.Rect(y*tile_size+y*1, x*tile_size+x*1, tile_size, tile_size)
+                if population[y][x] == 0:
+                    pygame.draw.rect(screen, WHITE, rect, 0)
+                elif population[y][x] == 1:
+                    pygame.draw.rect(screen, GREEN, rect, 0)
+                elif population[y][x] == 2:
+                    pygame.draw.rect(screen, RED, rect, 0)
+                else:
+                    pygame.draw.rect(screen, BLUE, rect, 0)
+
+        # calculate new state
+        tmp_population = copy.deepcopy(population)
+
+        for y in range(len(population)):
+            for x in range(len(population)):
+                # calculate new sicknesses for healthy people
+                if population[y][x] == 0:
+                    is_sick = get_sick_prob(y,x)
+                    # using this probability randomly choose whether person gets sick or not
+                    tmp_population[y][x] = random.choices([0, 2], weights=(1-is_sick, is_sick), k=1)[0]
+                # calculate new recoveries or deaths
+                elif population[y][x] == 2:
+                    tmp_population[y][x] = random.choices([1,3,2], weights=(prob_recover, prob_death, 1-prob_recover-prob_death), k=1)[0]
+
+        population = copy.deepcopy(tmp_population)
+        #add new day at the end of the cycle
+        days += 1
+
     pygame.display.flip()
     #time.sleep(0.1)
 
