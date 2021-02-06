@@ -58,12 +58,12 @@ prob_death = 0.01
 prob_death_quarantine = 0.001
 prob_recover = 0.1
 contagiousness = 0.05
-quarantine_chance = 0.3
+quarantine_chance = 0.2
 recovery_time = 10
 quarantine_size = 300
 contacts_amount = 8
 initially_infected = 2
-initially_immune = 0.1
+initially_immune = 0
 
 # randomly infect several people in population
 for k in range(initially_infected):
@@ -80,7 +80,6 @@ while j < k:
     x = random.randint(0, len(population)-1)
     if population[y][x] != 1 and population[y][x] != 2:
         population[y][x] = 1
-        print(j)
         j += 1
 
 # calculate the probability to get sick using only close neighbors
@@ -149,7 +148,59 @@ def get_sick_prob_mod(y, x):
     prob_to_get_sick_mod = 1 - (1-contagiousness) ** infected_contacts
 
     return prob_to_get_sick_mod
-                
+
+# calculate probability to get sick taking into consideration close and distant contacts
+# distant contacts are not more than 3 cells away from person
+def get_sick_prob_mod2(y, x):
+    close_contacts = int(round(contacts_amount * 0.7))
+    random_contacts = contacts_amount - close_contacts
+    # first count the amount of infected in close contacts range
+    close_contacts_list = []
+
+    infected_contacts = 0
+    for y1 in range(y-1, y+2):
+        for x1 in range(x-1, x+2):
+            if x1 == x and y1 == y:
+                continue
+            if y1 < 0 or x1 < 0:
+                continue
+            try:
+                close_contacts_list.append(population[y1][x1])
+            except IndexError:
+                continue
+    if len(close_contacts_list) <= close_contacts:
+        for i in range(len(close_contacts_list)):
+            if close_contacts_list[i] == 2:
+                infected_contacts += 1
+    else:
+        todays_contacts = random.sample(close_contacts_list, close_contacts)
+        for i in range(close_contacts):
+            if todays_contacts[i] == 2:
+                infected_contacts += 1
+
+    #count infected contacts in distant range (3 cells away from person)
+    distant_contacts_list = []
+    for y1 in range(y-3, y+4):
+        for x1 in range(x-3, x+4):
+            if abs(y1-y) <= 1 or abs(x1-x) <= 1:
+                continue
+            if x1 < 0 or y1 < 0:
+                continue
+            try:
+                distant_contacts_list.append(population[y1][x1])
+            except IndexError:
+                continue
+    distant_contacts = random.sample(distant_contacts_list, random_contacts)
+    for i in range(random_contacts):
+        if distant_contacts[i] == 2:
+            infected_contacts += 1
+
+    prob_to_get_sick_mod2 = 1 - (1-contagiousness) ** infected_contacts
+
+    return prob_to_get_sick_mod2
+
+
+
 # this function draws GUI which chows current statistics
 def draw_ui(name, value, indent):
     text = def_font.render(name, False, WHITE)
@@ -328,9 +379,15 @@ while running:
                 x = random.randint(0, len(population)-1)
                 population[y][x] = 2
                 population_recovery[y][x] = recovery_time
-
-
-
+            # randomly immunize people in population
+            k = int(round(len(population)*len(population) * initially_immune))
+            j = 0
+            while j < k:
+                y = random.randint(0, len(population)-1)
+                x = random.randint(0, len(population)-1)
+                if population[y][x] != 1 and population[y][x] != 2:
+                    population[y][x] = 1
+                    j += 1
 
     if simulating:
         # calculate new state
@@ -340,7 +397,7 @@ while running:
             for x in range(len(population)):
                 # calculate new sicknesses for healthy people
                 if population[y][x] == 0:
-                    is_sick = get_sick_prob_mod(y,x)
+                    is_sick = get_sick_prob_mod2(y,x)
                     # using this probability randomly choose whether person gets sick or not
                     tmp_population[y][x] = random.choices([0, 2], weights=(1-is_sick, is_sick), k=1)[0]
                     if tmp_population[y][x] == 2:
@@ -372,7 +429,6 @@ while running:
         #add new day at the end of the cycle
         days += 1
         
-
     pygame.display.flip()
     #time.sleep(0.1)
 
