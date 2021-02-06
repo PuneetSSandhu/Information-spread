@@ -53,25 +53,35 @@ people_in_quarantine = 0
 
 days = 0
 
-# probabilities
+# probabilities and constants
 prob_death = 0.01
 prob_death_quarantine = 0.001
 prob_recover = 0.1
 contagiousness = 0.05
-quarantine_chance = 0
+quarantine_chance = 0.3
 recovery_time = 10
 quarantine_size = 300
 contacts_amount = 8
+initially_infected = 2
+initially_immune = 0.1
 
 # randomly infect several people in population
-i = random.randint(1,2) # number of infected
-
-for k in range(i):
+for k in range(initially_infected):
     y = random.randint(0, len(population)-1)
     x = random.randint(0, len(population)-1)
-
     population[y][x] = 2
     population_recovery[y][x] = recovery_time
+
+# randomly immunize people in population
+k = int(round(len(population)*len(population) * initially_immune))
+j = 0
+while j < k:
+    y = random.randint(0, len(population)-1)
+    x = random.randint(0, len(population)-1)
+    if population[y][x] != 1 and population[y][x] != 2:
+        population[y][x] = 1
+        print(j)
+        j += 1
 
 # calculate the probability to get sick using only close neighbors
 def get_sick_prob(y, x):
@@ -375,9 +385,12 @@ while running:
             population = np.zeros((100,100))
             tmp_population = copy.deepcopy(population)
             days = 0
-            i = random.randint(1,2) # number of infected
-            for k in range(i):
-                population[random.randint(0, len(population)-1)][random.randint(0,len(population)-1)] = 2
+            # randomly infect several people in the population
+            for k in range(initially_infected):
+                y = random.randint(0, len(population)-1)
+                x = random.randint(0, len(population)-1)
+                population[y][x] = 2
+                population_recovery[y][x] = recovery_time
 
 
 
@@ -421,8 +434,6 @@ while running:
         
         #add new day at the end of the cycle
         days += 1
-
-        #if disease spread is over - stop simulation
         
 
     pygame.display.flip()
