@@ -150,7 +150,40 @@ def get_sick_prob_mod(y, x):
 
     return prob_to_get_sick_mod
                 
+# this function draws GUI which chows current statistics
+def draw_ui(name, value, indent):
+    text = def_font.render(name, False, WHITE)
+    text_rect = text.get_rect()
+    text_rect.move_ip(850, 60 + indent)
+    screen.blit(text, text_rect)
+    text_value = def_font.render(value, False, WHITE)
+    text_value_rect = text_value.get_rect()
+    text_value_rect.move_ip(text_rect.right + 10, text_rect.top)
+    screen.blit(text_value, text_value_rect)
 
+def draw_chart():
+
+    chart_immune = small_font.render("Share of immune", False, WHITE)
+    chart_immune_rect = chart_immune.get_rect()
+    chart_immune_rect.move_ip(850, 300)
+    screen.blit(chart_immune, chart_immune_rect)
+    chart_area = pygame.Rect(chart_immune_rect.left, chart_immune_rect.bottom+5, 300, 100)
+    if days <= 1:
+        pygame.draw.rect(screen, WHITE, chart_area)
+    chart_infected = small_font.render("Share of infected", False, WHITE)
+    chart_infected_rect = chart_infected.get_rect()
+    chart_infected_rect.move_ip(chart_area.left, chart_area.bottom+5)
+    screen.blit(chart_infected, chart_infected_rect)
+
+    #draw a line of infected
+    share_of_infected = int(round((infected_people / 10000) * 100))
+    infected_dot = pygame.Rect(chart_area.left + days, chart_area.bottom - share_of_infected, 1,1)
+    pygame.draw.rect(screen, BLACK, infected_dot)
+
+    #draw a line for immune
+    share_of_immune = int(round((immune_people / 10000) * 100))
+    immune_dot = pygame.Rect(chart_area.left + days, chart_area.top + share_of_immune, 1,1)
+    pygame.draw.rect(screen, BLACK, immune_dot)
 
 simulating = False
 running = True
@@ -208,94 +241,26 @@ while running:
     rect = pygame.Rect(850, 20, 50, 100)
     program_name = def_font.render("DISEASE SIMULATION", False, WHITE)
     screen.blit(program_name, rect)
-
+    
     #number of infected
-    infected_num_text = def_font.render("Infected:", False, WHITE)
-    infected_num_text_rect = infected_num_text.get_rect()
-    infected_num_text_rect.move_ip(850,60)
-    screen.blit(infected_num_text, infected_num_text_rect)
-    infected_num = def_font.render(str(int(infected_people)), False, WHITE)
-    infected_num_rect = infected_num.get_rect()
-    infected_num_rect.move_ip(infected_num_text_rect.right + 10, infected_num_text_rect.top)
-    screen.blit(infected_num, infected_num_rect)
-
+    draw_ui("Infected:", str(int(infected_people)), 0) 
     #number of quarantined
-    quarantine_num_text = def_font.render("Quarantine:", False, WHITE)
-    quarantine_num_text_rect = quarantine_num_text.get_rect()
-    quarantine_num_text_rect.move_ip(infected_num_text_rect.left, infected_num_rect.bottom+10)
-    screen.blit(quarantine_num_text, quarantine_num_text_rect)
-    quarantine_num = def_font.render(str(int(quarantine_people)), False, WHITE)
-    quarantine_num_rect = quarantine_num.get_rect()
-    quarantine_num_rect.move_ip(quarantine_num_text_rect.right + 10, quarantine_num_text_rect.top)
-    screen.blit(quarantine_num, quarantine_num_rect)
-
+    draw_ui("Quarantine:", str(int(quarantine_people)), 40)
     #number of immune
-    immune_num_text = def_font.render("Immune:", False, WHITE)
-    immune_num_text_rect = immune_num_text.get_rect()
-    immune_num_text_rect.move_ip(quarantine_num_text_rect.left, quarantine_num_rect.bottom+10)
-    screen.blit(immune_num_text, immune_num_text_rect)
-    immune_num = def_font.render(str(int(immune_people)), False, WHITE)
-    immune_num_rect = immune_num.get_rect()
-    immune_num_rect.move_ip(immune_num_text_rect.right + 10, immune_num_text_rect.top)
-    screen.blit(immune_num, immune_num_rect)
-
+    draw_ui("Immune:", str(int(immune_people)), 80)
     #number of dead
-    dead_num_text = def_font.render("Dead:", False, WHITE)
-    dead_num_text_rect = dead_num_text.get_rect()
-    dead_num_text_rect.move_ip(immune_num_text_rect.left, immune_num_rect.bottom+10)
-    screen.blit(dead_num_text, dead_num_text_rect)
-    dead_num = def_font.render(str(int(dead_people)), False, WHITE)
-    dead_num_rect = dead_num.get_rect()
-    dead_num_rect.move_ip(dead_num_text_rect.right + 10, dead_num_text_rect.top)
-    screen.blit(dead_num, dead_num_rect)
-
+    draw_ui("Dead:", str(int(dead_people)), 120)
     #number of healthy
-    healthy_num_text = def_font.render("Healthy:", False, WHITE)
-    healthy_num_text_rect = healthy_num_text.get_rect()
-    healthy_num_text_rect.move_ip(dead_num_text_rect.left, dead_num_rect.bottom+10)
-    screen.blit(healthy_num_text, healthy_num_text_rect)
-    healthy_num = def_font.render(str(int(healthy_people)), False, WHITE)
-    healthy_num_rect = healthy_num.get_rect()
-    healthy_num_rect.move_ip(healthy_num_text_rect.right + 10, healthy_num_text_rect.top)
-    screen.blit(healthy_num, healthy_num_rect)
-
+    draw_ui("Healthy:", str(int(healthy_people)), 160)
     #number of days passed
-    days_num_text = def_font.render("Days:", False, WHITE)
-    days_num_text_rect = days_num_text.get_rect()
-    days_num_text_rect.move_ip(healthy_num_text_rect.left, healthy_num_rect.bottom+10)
-    screen.blit(days_num_text, days_num_text_rect)
-    days_num = def_font.render(str(days), False, WHITE)
-    days_num_rect = days_num.get_rect()
-    days_num_rect.move_ip(days_num_text_rect.right + 10, days_num_text_rect.top)
-    screen.blit(days_num, days_num_rect)
+    draw_ui("Days:", str(days), 200)
 
     #CHART
-    # draw an area for future chart
-    if days <= 1:
-        chart_immune = small_font.render("Share of immune", False, WHITE)
-        chart_immune_rect = chart_immune.get_rect()
-        chart_immune_rect.move_ip(days_num_text_rect.left, days_num_text_rect.bottom+15)
-        screen.blit(chart_immune, chart_immune_rect)
-        chart_area = pygame.Rect(chart_immune_rect.left, chart_immune_rect.bottom+5, 300, 100)
-        pygame.draw.rect(screen, WHITE, chart_area)
-        chart_infected = small_font.render("Share of infected", False, WHITE)
-        chart_infected_rect = chart_infected.get_rect()
-        chart_infected_rect.move_ip(chart_area.left, chart_area.bottom+5)
-        screen.blit(chart_infected, chart_infected_rect)
-
-    #draw a line of infected
-    share_of_infected = int(round((infected_people / 10000) * 100))
-    infected_dot = pygame.Rect(chart_area.left + days, chart_area.bottom - share_of_infected, 1,1)
-    pygame.draw.rect(screen, BLACK, infected_dot)
-
-    #draw a line for immune
-    share_of_immune = int(round((immune_people / 10000) * 100))
-    immune_dot = pygame.Rect(chart_area.left + days, chart_area.top + share_of_immune, 1,1)
-    pygame.draw.rect(screen, BLACK, immune_dot)
-
+    draw_chart()
+    
     #control buttons
     #start
-    start_button = pygame.Rect(chart_area.left, chart_area.bottom+30, 150, 30)
+    start_button = pygame.Rect(850, 470, 150, 30)
     start_button_text = small_font.render("START", False, BLACK)
     start_button_text_rect = start_button_text.get_rect()
     start_button_text_rect.center = start_button.center
@@ -303,7 +268,7 @@ while running:
     screen.blit(start_button_text, start_button_text_rect)
 
     #stop
-    stop_button = pygame.Rect(start_button.right + 20, chart_area.bottom+30, 150, 30)
+    stop_button = pygame.Rect(start_button.right + 20, 470, 150, 30)
     stop_button_text = small_font.render("STOP", False, BLACK)
     stop_button_text_rect = stop_button_text.get_rect()
     stop_button_text_rect.center = stop_button.center
@@ -311,7 +276,7 @@ while running:
     screen.blit(stop_button_text, stop_button_text_rect)
 
     #restart
-    restart_button = pygame.Rect(stop_button.right + 20, chart_area.bottom+30, 150, 30)
+    restart_button = pygame.Rect(stop_button.right + 20, 470, 150, 30)
     restart_button_text = small_font.render("RESTART", False, BLACK)
     restart_button_text_rect = restart_button_text.get_rect()
     restart_button_text_rect.center = restart_button.center
@@ -325,53 +290,25 @@ while running:
     if max_infected < infected_people:
         max_infected = infected_people
     # draw the data
-    max_num_of_infected = def_font.render("MAX infected:", False, WHITE)
-    max_num_of_infected_rect = max_num_of_infected.get_rect()
-    max_num_of_infected_rect.move_ip(start_button.left, start_button.bottom+10)
-    screen.blit(max_num_of_infected, max_num_of_infected_rect)
-    amount_value = def_font.render(str(int(max_infected)), False, WHITE)
-    amount_value_rect = amount_value.get_rect()
-    amount_value_rect.move_ip(max_num_of_infected_rect.right + 10, max_num_of_infected_rect.top)
-    screen.blit(amount_value, amount_value_rect)
+    draw_ui("MAX infected:", str(int(max_infected)), 450)
+   
 
     # average amount of infected
     #calculate the amount
     average_amount = (infected_people+dead_people+immune_people+quarantine_people) / days
     # draw the data
-    average_num_of_infected = def_font.render("AVERAGE infected per day:", False, WHITE)
-    average_num_of_infected_rect = average_num_of_infected.get_rect()
-    average_num_of_infected_rect.move_ip(max_num_of_infected_rect.left, max_num_of_infected_rect.bottom+10)
-    screen.blit(average_num_of_infected, average_num_of_infected_rect)
-    average_amount_value = def_font.render(str(round(average_amount, 2)), False, WHITE)
-    average_amount_value_rect = average_amount_value.get_rect()
-    average_amount_value_rect.move_ip(average_num_of_infected_rect.right + 10, average_num_of_infected_rect.top)
-    screen.blit(average_amount_value, average_amount_value_rect)
+    draw_ui("AVERAGE infected per day:", str(round(average_amount, 2)), 490)
 
     # Infected per day
-    infected_per_day = def_font.render("Infected per day:", False, WHITE)
-    infected_per_day_rect = infected_per_day.get_rect()
-    infected_per_day_rect.move_ip(average_num_of_infected_rect.left, average_num_of_infected_rect.bottom+10)
-    screen.blit(infected_per_day, infected_per_day_rect)
-    infected_per_day_value = def_font.render(str(amount_infected_per_day), False, WHITE)
-    infected_per_day_value_rect = infected_per_day_value.get_rect()
-    infected_per_day_value_rect.move_ip(infected_per_day_rect.right + 10, infected_per_day_rect.top)
-    screen.blit(infected_per_day_value, infected_per_day_value_rect)
+    draw_ui("Infected per day:", str(amount_infected_per_day), 530)
 
     # R(0) - average amount of people that one infected infects
     # calculate r(0)
     if infected_people > 0:
         r0_value_data = round(amount_infected_per_day / (infected_people - amount_infected_per_day), 2)
     # draw data
-    r0 = def_font.render("R(0):", False, WHITE)
-    r0_rect = r0.get_rect()
-    r0_rect.move_ip(infected_per_day_rect.left, infected_per_day_rect.bottom+10)
-    screen.blit(r0, r0_rect)
-    r0_value = def_font.render(str(r0_value_data), False, WHITE)
-    r0_value_rect = r0_value.get_rect()
-    r0_value_rect.move_ip(r0_rect.right + 10, r0_rect.top)
-    screen.blit(r0_value, r0_value_rect)
+    draw_ui("R(0):", str(r0_value_data), 570)
     amount_infected_per_day = 0
-
 
     #check whether buttons were clicked
     click, _, _ = pygame.mouse.get_pressed()
