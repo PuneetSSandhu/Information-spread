@@ -57,7 +57,7 @@ days = 0
 prob_death = 0.01
 prob_death_quarantine = 0.001
 prob_recover = 0.1
-contagiousness = 0.05
+contagiousness = 0.15
 quarantine_chance = 0.2
 recovery_time = 10
 quarantine_size = 300
@@ -198,6 +198,24 @@ def get_sick_prob_mod2(y, x):
     prob_to_get_sick_mod2 = 1 - (1-contagiousness) ** infected_contacts
 
     return prob_to_get_sick_mod2
+
+def is_infected(y, x):
+    #loop through close contacts and infect them with fiven probability
+    for y1 in range(y-1, y+2):
+        for x1 in range(x-1, x+2):
+            if x1 < 0 or y1 < 0:
+                continue
+            try:
+                if population[y1][x1] == 1 or population[y1][x1] == 2 or population[y1][x1] == 3 or population[y1][x1] == 4:
+                    continue
+            except IndexError:
+                continue
+            if random.choices([0,1], weights=(1-contagiousness, contagiousness), k=1)[0] == 1:
+                try:
+                    tmp_population[y1][x1] = 2
+                    population_recovery[y1][x1] = recovery_time
+                except IndexError:
+                    continue
 
 
 
@@ -395,17 +413,12 @@ while running:
         tmp_population = copy.deepcopy(population)
         
         for y in range(len(population)):
-            for x in range(len(population)):
-                # calculate new sicknesses for healthy people
-                if population[y][x] == 0:
-                    is_sick = get_sick_prob_mod(y,x)
-                    # using this probability randomly choose whether person gets sick or not
-                    tmp_population[y][x] = random.choices([0, 2], weights=(1-is_sick, is_sick), k=1)[0]
-                    if tmp_population[y][x] == 2:
-                        population_recovery[y][x] = recovery_time
-                        amount_infected_per_day += 1
+            for x in range(len(population)): 
                 # calculate new recoveries or deaths or quarantine for infected
-                elif population[y][x] == 2:
+                if population[y][x] == 2:
+                    # loop through neighbors and choose who will be infected
+                    is_infected(y,x)
+
                     #tmp_population[y][x] = random.choices([1,3,2], weights=(prob_recover, prob_death, 1-prob_recover-prob_death), k=1)[0]
                     tmp_population[y][x] = random.choices([2,3], weights=(1-prob_death, prob_death), k=1)[0]
                     if population_recovery[y][x] <= 0:
