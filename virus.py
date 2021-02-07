@@ -390,14 +390,15 @@ while running:
                     j += 1
 
     if simulating:
+        timestamp = time.time()
         # calculate new state
         tmp_population = copy.deepcopy(population)
-
+        
         for y in range(len(population)):
             for x in range(len(population)):
                 # calculate new sicknesses for healthy people
                 if population[y][x] == 0:
-                    is_sick = get_sick_prob_mod2(y,x)
+                    is_sick = get_sick_prob_mod(y,x)
                     # using this probability randomly choose whether person gets sick or not
                     tmp_population[y][x] = random.choices([0, 2], weights=(1-is_sick, is_sick), k=1)[0]
                     if tmp_population[y][x] == 2:
@@ -428,6 +429,7 @@ while running:
         
         #add new day at the end of the cycle
         days += 1
+        print(time.time()- timestamp)
         
     pygame.display.flip()
     #time.sleep(0.1)
