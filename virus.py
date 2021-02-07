@@ -57,11 +57,11 @@ days = 0
 prob_death = 0.01
 prob_death_quarantine = 0.001
 prob_recover = 0.1
-contagiousness = 0.15
+contagiousness = 0.05
 quarantine_chance = 0.2
 recovery_time = 10
 quarantine_size = 300
-contacts_amount = 8
+contacts_amount = 10
 initially_infected = 2
 initially_immune = 0
 
@@ -199,6 +199,7 @@ def get_sick_prob_mod2(y, x):
 
     return prob_to_get_sick_mod2
 
+# take only close contacts into consideration
 def is_infected(y, x):
     #loop through close contacts and infect them with fiven probability
     for y1 in range(y-1, y+2):
@@ -217,7 +218,101 @@ def is_infected(y, x):
                 except IndexError:
                     continue
 
+# take close contacts and random contacts into consideration, split is 70/30
+def is_infected_mod(y, x):
+    close_contacts = int(round(contacts_amount * 0.7))
+    random_contacts = contacts_amount - close_contacts
 
+    #consider close contacts
+    #create a list of close contacts
+    neighbors = []
+    for y1 in range(y-1, y+2):
+        for x1 in range(x-1, x+2):
+            if y1 == y and x1 == x:
+                continue
+            if y1 < 0 or x1 < 0:
+                continue
+            if y1 > len(population) -1 or x1 > len(population) - 1:
+                continue
+            neighbors.append((y1, x1))
+
+    #choose random contacts from that list using number of contacts
+    if close_contacts > len(neighbors):
+        close_contacts = len(neighbors)
+
+    for i in range(close_contacts):
+        y1, x1 = random.choice(neighbors)
+        if population[y1][x1] == 0:
+            if random.choices([0,1], weights=(1-contagiousness, contagiousness), k=1)[0] == 1:
+                tmp_population[y1][x1] = 2
+                population_recovery[y1][x1] = recovery_time
+        neighbors.remove((y1,x1))
+
+    #consider random_contacts
+    i = 0
+    while i < random_contacts:
+        y1 = random.randint(0, len(population) - 1)
+        x1 = random.randint(0, len(population) - 1)
+        if population[y1][x1] == 3 or (y1 == y and x1 == x):
+            continue
+        elif population[y1][x1] == 0:
+            if random.choices([0,1], weights=(1-contagiousness, contagiousness), k=1)[0] == 1:
+                tmp_population[y1][x1] = 2
+                population_recovery[y1][x1] = recovery_time
+
+        i += 1
+
+def is_infected_mod2(y, x):
+    close_contacts = int(round(contacts_amount * 0.7))
+    random_contacts = contacts_amount - close_contacts
+
+    #consider close contacts
+    #create a list of close contacts
+    neighbors = []
+    for y1 in range(y-1, y+2):
+        for x1 in range(x-1, x+2):
+            if y1 == y and x1 == x:
+                continue
+            if y1 < 0 or x1 < 0:
+                continue
+            if y1 > len(population) -1 or x1 > len(population) - 1:
+                continue
+            neighbors.append((y1, x1))
+
+    #choose random contacts from that list using number of contacts
+    if close_contacts > len(neighbors):
+        close_contacts = len(neighbors)
+
+    for i in range(close_contacts):
+        y1, x1 = random.choice(neighbors)
+        if population[y1][x1] == 0:
+            if random.choices([0,1], weights=(1-contagiousness, contagiousness), k=1)[0] == 1:
+                tmp_population[y1][x1] = 2
+                population_recovery[y1][x1] = recovery_time
+        neighbors.remove((y1,x1))
+
+    #consider distant_contacts (3 cells away from person)
+    neighbors = []
+    for y1 in range(y-3, y+4):
+        for x1 in range(x-3, x+4):
+            if abs(y1-y) <= 1 or abs(x1-x) <= 1:
+                continue
+            if y1 < 0 or x1 < 0:
+                continue
+            if y1 > len(population) -1 or x1 > len(population) - 1:
+                continue
+            neighbors.append((y1, x1))
+
+    #choose random contacts from that list using number of contacts
+    for i in range(random_contacts):
+        y1, x1 = random.choice(neighbors)
+        if population[y1][x1] == 3:
+            continue
+        if population[y1][x1] == 0:
+            if random.choices([0,1], weights=(1-contagiousness, contagiousness), k=1)[0] == 1:
+                tmp_population[y1][x1] = 2
+                population_recovery[y1][x1] = recovery_time
+        neighbors.remove((y1,x1))
 
 # this function draws GUI which chows current statistics
 def draw_ui(name, value, indent):
@@ -417,7 +512,7 @@ while running:
                 # calculate new recoveries or deaths or quarantine for infected
                 if population[y][x] == 2:
                     # loop through neighbors and choose who will be infected
-                    is_infected(y,x)
+                    is_infected_mod2(y,x)
 
                     #tmp_population[y][x] = random.choices([1,3,2], weights=(prob_recover, prob_death, 1-prob_recover-prob_death), k=1)[0]
                     tmp_population[y][x] = random.choices([2,3], weights=(1-prob_death, prob_death), k=1)[0]
@@ -442,10 +537,10 @@ while running:
         
         #add new day at the end of the cycle
         days += 1
-        print(time.time()- timestamp)
+        #print(time.time()- timestamp)
         
     pygame.display.flip()
-    #time.sleep(0.1)
+    #time.sleep(0.5)
 
 
             
