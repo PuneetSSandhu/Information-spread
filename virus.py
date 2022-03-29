@@ -3,6 +3,7 @@ import time
 import copy
 import pygame
 import numpy as np
+import matplotlib
 
 pygame.init()
 
@@ -15,8 +16,8 @@ WHITE = (255,255,255)
 BLACK = (0,0,0)
 RED = (255,0,0)
 GREEN = (0,255,0)
-BLUE = (0,0,255)
-ORANGE = (255,150,0)
+BLUE = (0,255,0)
+ORANGE = (0,255,0)
 
 #screen size
 screen_height = 800
@@ -51,18 +52,18 @@ max_infected = 0
 amount_infected_per_day = 0
 people_in_quarantine = 0
 
-days = 0
+days = 1
 
 # probabilities and constants
-prob_death = 0.01
-prob_death_quarantine = 0.001
-prob_recover = 0.1
-contagiousness = 0.05
-quarantine_chance = 0.2
-recovery_time = 10
-quarantine_size = 300
+prob_death = 0
+prob_death_quarantine = 0
+prob_recover = 1
+contagiousness = 0.5
+quarantine_chance = 0
+recovery_time = 1
+quarantine_size = 0
 contacts_amount = 8
-initially_infected = 2
+initially_infected = 8
 initially_immune = 0
 
 # randomly infect several people in population
@@ -205,7 +206,7 @@ def get_sick_prob_mod2(y, x):
 def draw_ui(name, value, indent):
     text = def_font.render(name, False, WHITE)
     text_rect = text.get_rect()
-    text_rect.move_ip(850, 60 + indent)
+    text_rect.move_ip(850, 100 + indent)
     screen.blit(text, text_rect)
     text_value = def_font.render(value, False, WHITE)
     text_value_rect = text_value.get_rect()
@@ -214,14 +215,14 @@ def draw_ui(name, value, indent):
 
 def draw_chart():
 
-    chart_immune = small_font.render("Share of immune", False, WHITE)
+    chart_immune = small_font.render("Share of Geocentric", False, WHITE)
     chart_immune_rect = chart_immune.get_rect()
     chart_immune_rect.move_ip(850, 300)
     screen.blit(chart_immune, chart_immune_rect)
     chart_area = pygame.Rect(chart_immune_rect.left, chart_immune_rect.bottom+5, 300, 100)
     if days <= 1:
         pygame.draw.rect(screen, WHITE, chart_area)
-    chart_infected = small_font.render("Share of infected", False, WHITE)
+    chart_infected = small_font.render("Share of Heliocentric", False, WHITE)
     chart_infected_rect = chart_infected.get_rect()
     chart_infected_rect.move_ip(chart_area.left, chart_area.bottom+5)
     screen.blit(chart_infected, chart_infected_rect)
@@ -289,22 +290,22 @@ while running:
     
     #draw UI
     #name of project
-    rect = pygame.Rect(850, 20, 50, 100)
+    rect = pygame.Rect(850, 20, 100, 200)
     program_name = def_font.render("DISEASE SIMULATION", False, WHITE)
     screen.blit(program_name, rect)
     
     #number of infected
-    draw_ui("Infected:", str(int(infected_people)), 0) 
+    draw_ui("Contacted:", str(int(infected_people)), 0) 
     #number of quarantined
-    draw_ui("Quarantine:", str(int(quarantine_people)), 40)
+    # draw_ui("Quarantine:", str(int(quarantine_people)), 40)
     #number of immune
-    draw_ui("Immune:", str(int(immune_people)), 80)
+    # draw_ui("Immune:", str(int(immune_people)), 80)
     #number of dead
-    draw_ui("Dead:", str(int(dead_people)), 120)
+    draw_ui("Heliocentric:", str(int(dead_people)+int(immune_people)+int(quarantine_people)), 40)
     #number of healthy
-    draw_ui("Healthy:", str(int(healthy_people)), 160)
+    # draw_ui("Healthy:", str(int(healthy_people)), 160)
     #number of days passed
-    draw_ui("Days:", str(days), 200)
+    draw_ui("Days:", str(days), 80)
 
     #CHART
     draw_chart()
@@ -335,23 +336,23 @@ while running:
     screen.blit(restart_button_text, restart_button_text_rect)
 
     # statistics
-    screen.fill(BLACK, (start_button.left, start_button.bottom + 5, 400, 300))
+    screen.fill(BLACK, (start_button.left, start_button.bottom + 5, 400, 400))
     # maximum amount of infected
     # calculate the amount
     if max_infected < infected_people:
         max_infected = infected_people
     # draw the data
-    draw_ui("MAX infected:", str(int(max_infected)), 450)
+    draw_ui("MAX Beliving:", str(int(max_infected)), 450)
    
 
     # average amount of infected
     #calculate the amount
     average_amount = (infected_people+dead_people+immune_people+quarantine_people) / days
     # draw the data
-    draw_ui("AVERAGE infected per day:", str(round(average_amount, 2)), 490)
+    draw_ui("AVERAGE Told each day:", str(round(average_amount, 2)), 490)
 
     # Infected per day
-    draw_ui("Infected per day:", str(amount_infected_per_day), 530)
+    draw_ui("Believers of Heliocentricism:", str(amount_infected_per_day), 530)
 
     # R(0) - average amount of people that one infected infects
     # calculate r(0)
