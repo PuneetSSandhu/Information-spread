@@ -291,7 +291,7 @@ while running:
     #draw UI
     #name of project
     rect = pygame.Rect(850, 20, 100, 200)
-    program_name = def_font.render("DISEASE SIMULATION", False, WHITE)
+    program_name = def_font.render("INFORMATION SIMULATION", False, WHITE)
     screen.blit(program_name, rect)
     
     #number of infected
