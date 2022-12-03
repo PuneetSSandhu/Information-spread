@@ -1,2 +1,2 @@
 # Information-spread
-Visualization of desease spreading
+Visualization of information spreading
